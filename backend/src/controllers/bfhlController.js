@@ -1,4 +1,6 @@
 const { parseAndValidate } = require("../utils/validator");
+const { dedupeEdges } = require("../utils/duplicateDetector");
+const { buildGraph } = require("../utils/graphBuilder");
 
 exports.handleBfhl = (req, res) => {
   const { data } = req.body;
@@ -8,9 +10,14 @@ exports.handleBfhl = (req, res) => {
   }
 
   const { invalid, edges } = parseAndValidate(data);
+  const { uniqueEdges, duplicates } = dedupeEdges(edges);
+  const { parentOf, childrenOf, orderedNodes } = buildGraph(uniqueEdges);
 
   res.json({
     invalid_entries: invalid,
-    valid_edges_found: edges.map((e) => e.key)
+    duplicate_edges: duplicates,
+    nodes: orderedNodes,
+    parentOf,
+    childrenOf
   });
 };
